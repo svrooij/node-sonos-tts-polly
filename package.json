@@ -1,6 +1,6 @@
 {
   "name": "@svrooij/sonos-tts-polly",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "description": "A small webserver that downloads Amazon Polly Text-To-Speech files and serves them to your sonos speaker. A companion to node package @svrooij/sonos.",
   "main": "./dist/index.js",
   "bin": {

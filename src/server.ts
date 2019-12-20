@@ -1,5 +1,5 @@
 import * as bodyparser from "body-parser";
-import express, { text } from "express";
+import express from "express";
 import { IConfigOptions } from "./config";
 import { PollyPromise } from "./polly-promise";
 
@@ -20,7 +20,7 @@ export class PollyTTSServer {
     this.setupStaticHosting(options.cacheFolder);
 
     this.registerEndpoints(options);
-    this.startListening(options.port);
+    this.startListening(options.port, options.runningInContainer);
     this.polly = new PollyPromise({
       accessKeyId: options.amazonKey,
       apiVersion: "2016-06-10",
@@ -39,7 +39,7 @@ export class PollyTTSServer {
     this.app.use(bodyparser.json());
     this.app.get("/api/voices", async (req, res) => {
       if (this.options.logRequests) {
-        console.log("GET from %s /api/voices", req.ip);
+        console.log("%s - [%s] - \"GET /api/voices\" \"%s\"", req.ip, new Date(), req.headers["user-agent"]);
       }
 
       const voices = await this.polly?.DescribeVoices().catch((err) => {
@@ -56,8 +56,14 @@ export class PollyTTSServer {
         const lang = req.params.lang;
         const ttsText = req.params.text;
 
+        if (this.options.textLimit !== undefined && ttsText.length > this.options.textLimit) {
+          res.sendStatus(400);
+          return;
+        }
+
         if (this.options.logRequests) {
-          console.log("GET from %s - %s %s", req.ip, lang, text);
+          console.log("%s - [%s] - \"GET /api/%s\" \"%s\" \"%s\"",
+            req.ip, new Date(), lang, ttsText, req.headers["user-agent"]);
         }
 
         await this.generateCacheFile(req.hostname, lang, ttsText).then((cacheResp) => {
@@ -72,8 +78,15 @@ export class PollyTTSServer {
       const lang = req.body.lang;
       const ttsText = req.body.text;
       const gender = req.body.gender;
+
+      if (this.options.textLimit !== undefined && ttsText.length > this.options.textLimit) {
+        res.sendStatus(400);
+        return;
+      }
+
       if (this.options.logRequests) {
-        console.log("POST from %s - %s %s", req.ip, lang, ttsText);
+        console.log("%s - [%s] - \"POST /api/generate\" %s \"%s\" \"%s\"",
+          req.ip, new Date(), lang, ttsText, req.headers["user-agent"]);
       }
       await this.generateCacheFile(req.hostname, lang, ttsText, gender).then((cacheResp) => {
         res.send(cacheResp);
@@ -121,7 +134,7 @@ export class PollyTTSServer {
         }
 
         if (this.options.logRequests) {
-          console.log("Generating text file %s with  %s", cacheFile, text);
+          console.log("Generating text file %s with  %s", cacheFile, ttsText);
         }
 
         // Download and save speech file

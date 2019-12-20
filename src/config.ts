@@ -10,6 +10,7 @@ export interface IConfigOptions {
   allowGet: boolean;
   logRequests: boolean;
   runningInContainer: boolean;
+  textLimit?: number;
 }
 
 export class ConfigLoader {
@@ -34,7 +35,8 @@ export class ConfigLoader {
         logRequests: { type: "boolean", default: false,
           describe: "Will log all requests to console" },
         runningInContainer: { type: "boolean", default: false,
-          describe: "Will teel the app to trust the reverse proxy." }
+          describe: "Will tell the app to trust the reverse proxy." },
+        textLimit: { type: "number", descibe: "The maximun amount of characters in the TTS requests."}
 
       })
       .epilog("Options can also be set with environment variables prefixed with 'SONOS_TTS_'")
