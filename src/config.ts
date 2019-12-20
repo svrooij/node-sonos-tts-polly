@@ -37,7 +37,7 @@ export class ConfigLoader {
           describe: "Will teel the app to trust the reverse proxy." }
 
       })
-      .epilog('Options can also be set with environment variables prefixed with \'SONOS_TTS_\'')
+      .epilog("Options can also be set with environment variables prefixed with 'SONOS_TTS_'")
       .env("SONOS_TTS")
       .version()
       .showHelpOnFail(true, "Specify at least the required parameters")

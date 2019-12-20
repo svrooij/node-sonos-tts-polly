@@ -145,8 +145,9 @@ export class PollyTTSServer {
 
   private startListening(port: number, inContainer?: boolean) {
     // See Express behind proxies https://expressjs.com/en/guide/behind-proxies.html
-    if(inContainer === true)
-      this.app.set('trust proxy', 'uniquelocal')
+    if (inContainer === true) {
+      this.app.set("trust proxy", "uniquelocal");
+    }
     this.app.listen(port, () => {
       console.log(`Sonos TTS server started at http://0.0.0.0:${port}\nPress [CTRL]+C to close`);
     });

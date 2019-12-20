@@ -79,7 +79,7 @@ If you're hosting this on a public server, be sure to put a reverse proxy in fro
 
 1. Library is written in TypeScript
 2. Build library with `npm run tsc`
-3. Lint before commit `npm run lint` (no errors allowed)
+3. Lint before commit `npm run lint` or `npm run lint-fix` (no errors allowed)
 4. Build docker container `docker build .` or `docker build -t svrooij/sonos-tts-polly .`
 
 ## Contributing
