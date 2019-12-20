@@ -1,9 +1,9 @@
 # Text to speech server (for sonos)
 
 [![Support me on Github][badge_sponsor]][link_sponsor]
-[![github issues][badge_issues]](link_issues)
-[![docker pulls][badge_docker]](link_docker)
-[![npm][badge_npm]](link_npm)
+[![github issues][badge_issues]][link_issues]
+[![docker pulls][badge_docker]][link_docker]
+[![npm][badge_npm]][link_npm]
 
 This is a small webserver that downloads text-to-speech files from [Amazon Polly](https://aws.amazon.com/polly/) for the requested text and language. It is build as an optional extension of [node-sonos-ts](https://github.com/svrooij/node-sonos-ts) to support text-to-speech on your sonos system.
 
