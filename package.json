@@ -10,7 +10,7 @@
     "dist/**/*.*"
   ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "echo \"Error: no test specified\" && npm run tsc",
     "tsc": "tsc",
     "dev": "ts-node-dev --respawn --transpileOnly ./src/index.ts",
     "prod": "tsc && node ./dist/index.js",
