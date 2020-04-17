@@ -1,11 +1,15 @@
-import { Polly } from "aws-sdk";
-import { SynthesizeSpeechInput, SynthesizeSpeechOutput } from "aws-sdk/clients/polly";
-export class PollyPromise {
+import { Polly } from 'aws-sdk';
+import { SynthesizeSpeechInput, SynthesizeSpeechOutput } from 'aws-sdk/clients/polly';
+
+export default class PollyPromise {
   private polly: Polly;
+
   private voiceList?: Polly.VoiceList;
-  constructor( options: Polly.ClientConfiguration ) {
-    if (options.apiVersion === undefined) { options.apiVersion = "2016-06-10"; }
-    this.polly = new Polly(options);
+
+  constructor(options: Polly.ClientConfiguration) {
+    const optionsWithDefaults = { ...{ apiVersion: '2016-06-10' }, ...options };
+
+    this.polly = new Polly(optionsWithDefaults);
   }
 
   public DescribeVoices(): Promise<Polly.VoiceList> {
@@ -20,9 +24,10 @@ export class PollyPromise {
   }
 
   public SynthesizeSpeech(options: SynthesizeSpeechInput): Promise<SynthesizeSpeechOutput> {
-    if (options.OutputFormat === undefined) { options.OutputFormat = "mp3"; }
+    const optionsWithDefaults = { ...{ OutputFormat: 'mp3' }, ...options };
+
     return new Promise((resolve, reject) => {
-      this.polly.synthesizeSpeech(options, (err, data) => {
+      this.polly.synthesizeSpeech(optionsWithDefaults, (err, data) => {
         if (err) { reject(err); }
         resolve(data);
       });
