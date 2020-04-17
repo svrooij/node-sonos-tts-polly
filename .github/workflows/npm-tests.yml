@@ -1,0 +1,29 @@
+name: Run tests from package.json
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+jobs:
+  run-tests-node:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12
+      - run: npm ci
+      - run: npm test
+  
+  release-from-master:
+    runs-on: ubuntu-latest
+    needs: run-tests-node
+    steps:
+      - uses: actions/checkout@v2
+      - name: Semantic Release
+        uses: cycjimmy/semantic-release-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
