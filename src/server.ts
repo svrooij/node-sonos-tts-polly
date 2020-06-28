@@ -78,9 +78,8 @@ export default class PollyTTSServer {
     }
 
     this.app.post('/api/generate', async (req, res) => {
-      const { lang } = req.body;
+      const { lang, gender, name } = req.body;
       const ttsText = req.body.text;
-      const { gender } = req.body;
 
       if (this.options.textLimit !== undefined && ttsText.length > this.options.textLimit) {
         res.sendStatus(400);
@@ -91,7 +90,7 @@ export default class PollyTTSServer {
         console.log('%s - [%s] - "POST /api/generate" %s "%s" "%s"',
           req.ip, new Date(), lang, ttsText, req.headers['user-agent']);
       }
-      await this.generateCacheFile(req.hostname, lang, ttsText, gender).then((cacheResp) => {
+      await this.generateCacheFile(req.hostname, lang, ttsText, gender, name).then((cacheResp) => {
         res.send(cacheResp);
       }).catch((err) => {
         res.sendStatus(500).send(err);
@@ -99,19 +98,19 @@ export default class PollyTTSServer {
     });
   }
 
-  private generateFilenameForText(lang: string, ttsText: string, gender?: string): string {
+  private generateFilenameForText(lang: string, ttsText: string, gender?: string, name?: string): string {
     const hash = crypto.createHash('sha1')
-      .update(`${lang}-${ttsText}-${gender}`.toLowerCase())
+      .update(`${lang}-${ttsText}-${gender}-${name}`.toLowerCase())
       .digest('hex');
     return `${hash}.mp3`;
   }
 
-  private async generateCacheFile(hostname: string, lang: string, ttsText: string, gender?: string): Promise<{ uri: string; cdnUri?: string }> {
+  private async generateCacheFile(hostname: string, lang: string, ttsText: string, gender?: string, name?: string): Promise<{ uri: string; cdnUri?: string }> {
     if (hostname === '' || lang === '' || ttsText === '') {
       throw new Error('Not all required paremeters are set');
     }
-    const filename = this.generateFilenameForText(lang, ttsText, gender);
-    const folder = path.join(this.options.cacheFolder, lang);
+    const filename = this.generateFilenameForText(lang, ttsText, gender, name);
+    const folder = path.join(this.options.cacheFolder, lang.toLowerCase());
 
     // Check if file exists else download file
     const cacheFile = path.join(folder, filename);
@@ -120,6 +119,7 @@ export default class PollyTTSServer {
       const voices = await this.polly?.DescribeVoices();
       const voice = voices?.find((v) => v.LanguageCode?.toLowerCase() === lang.toLowerCase()
         && (gender === undefined || v.Gender?.toLowerCase() === gender.toLowerCase())
+        && (name === undefined || v.Name?.toLowerCase() === name.toLowerCase())
       );
       if (voice === undefined || voice.Id === undefined) {
         throw new Error('Language not found');
@@ -143,8 +143,8 @@ export default class PollyTTSServer {
     }
 
     const responseObject = {
-      cdnUri: this.options.cacheUri !== undefined ? `${this.options.cacheUri}${lang}/${filename}` : undefined,
-      uri: `http://${hostname}:${this.options.port}/cache/${lang}/${filename}`,
+      cdnUri: this.options.cacheUri !== undefined ? `${this.options.cacheUri}${lang.toLowerCase()}/${filename}` : undefined,
+      uri: `http://${hostname}:${this.options.port}/cache/${lang.toLowerCase()}/${filename}`,
 
     };
     return Promise.resolve(responseObject);
