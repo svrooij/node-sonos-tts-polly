@@ -1,5 +1,6 @@
 import * as bodyparser from 'body-parser';
 import express from 'express';
+import NodeID3 from 'node-id3';
 
 import * as crypto from 'crypto';
 import * as fs from 'fs';
@@ -131,7 +132,7 @@ export default class PollyTTSServer {
       }
 
       if (this.options.logRequests) {
-        console.log('Generating text file %s with  %s', cacheFile, ttsText);
+        console.log('Generating text file %s with %s', cacheFile, ttsText);
       }
 
       // Download and save speech file
@@ -140,6 +141,13 @@ export default class PollyTTSServer {
         throw new Error('Speech could not be downloaded');
       }
       fs.writeFileSync(cacheFile, voiceData.AudioStream);
+
+      const tags = {
+        title: ttsText,
+        artist: `${voice.Name} Amazon Polly ${voice.LanguageCode}`,
+        album: 'sonos-tts-polly by @Svrooij',
+      } as NodeID3.Tags;
+      NodeID3.write(tags, cacheFile);
     }
 
     const responseObject = {
