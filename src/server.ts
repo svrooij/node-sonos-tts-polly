@@ -47,11 +47,13 @@ export default class PollyTTSServer {
       }
 
       const voices = await this.polly?.DescribeVoices().catch((err) => {
-        res.sendStatus(500);
+        res.status(500).send(err);
         console.warn(err);
       });
       if (voices) {
         res.send(voices);
+      } else {
+        res.status(404).end();
       }
     });
 
@@ -73,7 +75,8 @@ export default class PollyTTSServer {
         await this.generateCacheFile(req.hostname, lang, ttsText).then((cacheResp) => {
           res.send(cacheResp);
         }).catch((err) => {
-          res.sendStatus(500).send(err);
+          res.status(500).send(err);
+          console.warn('Error creating cache file %o', err);
         });
       });
     }
@@ -94,7 +97,8 @@ export default class PollyTTSServer {
       await this.generateCacheFile(req.hostname, lang, ttsText, gender, name).then((cacheResp) => {
         res.send(cacheResp);
       }).catch((err) => {
-        res.sendStatus(500).send(err);
+        res.status(500).send(err);
+        console.warn('Error creating cache file %o', err);
       });
     });
   }
@@ -118,7 +122,9 @@ export default class PollyTTSServer {
     if (!fs.existsSync(cacheFile)) {
       // Lookup first matching voice
       const voices = await this.polly?.DescribeVoices();
-      const voice = voices?.find((v) => v.LanguageCode?.toLowerCase() === lang.toLowerCase()
+      const voice = voices?.find((v) =>
+        v.LanguageCode?.toLowerCase() === lang.toLowerCase()
+        && v.SupportedEngines?.some(e => e === 'standard')
         && (gender === undefined || v.Gender?.toLowerCase() === gender.toLowerCase())
         && (name === undefined || v.Name?.toLowerCase() === name.toLowerCase())
       );

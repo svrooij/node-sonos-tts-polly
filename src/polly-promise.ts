@@ -12,7 +12,7 @@ export default class PollyPromise {
     this.polly = new Polly(optionsWithDefaults);
   }
 
-  public DescribeVoices(): Promise<Polly.VoiceList> {
+  public DescribeVoices(): Promise<Polly.VoiceList | undefined> {
     return new Promise((resolve, reject) => {
       if (this.voiceList !== undefined) { resolve(this.voiceList); }
       this.polly.describeVoices((err, data) => {
