@@ -122,9 +122,8 @@ export default class PollyTTSServer {
     if (!fs.existsSync(cacheFile)) {
       // Lookup first matching voice
       const voices = await this.polly?.DescribeVoices();
-      const voice = voices?.find((v) =>
-        v.LanguageCode?.toLowerCase() === lang.toLowerCase()
-        && v.SupportedEngines?.some(e => e === 'standard')
+      const voice = voices?.find((v) => v.LanguageCode?.toLowerCase() === lang.toLowerCase()
+        && v.SupportedEngines?.some((e) => e === 'standard')
         && (gender === undefined || v.Gender?.toLowerCase() === gender.toLowerCase())
         && (name === undefined || v.Name?.toLowerCase() === name.toLowerCase())
       );
