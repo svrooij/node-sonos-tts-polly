@@ -82,6 +82,35 @@ If you're hosting this on a public server, be sure to put a reverse proxy in fro
 3. Lint before commit `npm run lint` or `npm run lint-fix` (no errors allowed)
 4. Build docker container `docker build .` or `docker build -t svrooij/sonos-tts-polly .`
 
+### Deebug in VSCode
+
+Add the following `.vscode/launch.json` file, change your keys and your can debug the app very easily.
+
+```jsonc
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Launch Program",
+      "preLaunchTask": "tsc: build - tsconfig.json",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "program": "${workspaceFolder}\\src\\index.ts",
+      "outFiles": [
+        "${workspaceFolder}/dist/**/*.js"
+      ],
+      "args": ["--amazonKey", "YOUR_OWN_KEY", "--amazonSecret", "YOUR_OWN_SECRET"]
+    }
+  ]
+}
+```
+
 ## Contributing
 
 Be nice to each other. This server is build in my spare time!
