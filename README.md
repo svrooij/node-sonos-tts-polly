@@ -4,6 +4,12 @@
 [![github issues][badge_issues]][link_issues]
 [![docker pulls][badge_docker]][link_docker]
 [![npm][badge_npm]][link_npm]
+[![License](https://img.shields.io/npm/l/@svrooij/sonos-tts-polly.svg?style=flat-square)](https://github.com/svrooij/node-sonos-tts-polly/blob/master/package.json)
+
+[![Sonos typescript][badge_sonos-typescript]][link_sonos-typescript]
+[![Sonos2mqtt][badge_sonos-mqtt]][link_sonos-mqtt]
+[![Sonos api documentation][badge_sonos-docs]][link_sonos-docs]
+[![Sonos cli][badge_sonos-cli]][link_sonos-cli]
 
 This is a small webserver that downloads text-to-speech files from [Amazon Polly](https://aws.amazon.com/polly/) for the requested text and language. It is build as an optional extension of [node-sonos-ts](https://github.com/svrooij/node-sonos-ts) to support text-to-speech on your sonos system.
 
@@ -28,7 +34,7 @@ const request = new Request(
     headers: {
       'Content-type': 'application/json'
     },
-    body: JSON.stringify({ text: 'Hello world', lang: 'en-US', gender: 'male' })
+    body: JSON.stringify({ text: 'Hello world', lang: 'en-US', gender: 'male', engine: 'neural' })
   }
 )
 
@@ -78,11 +84,11 @@ If you're hosting this on a public server, be sure to put a reverse proxy in fro
 ## Developer notes
 
 1. Library is written in TypeScript
-2. Build library with `npm run tsc`
+2. Build library with `npm run build`
 3. Lint before commit `npm run lint` or `npm run lint-fix` (no errors allowed)
 4. Build docker container `docker build .` or `docker build -t svrooij/sonos-tts-polly .`
 
-### Deebug in VSCode
+### Debug in VSCode
 
 Copy `.env-sample` to `.env` and input your Amazon credentials. Then you can debug this app by pressing `F5`.
 
@@ -90,11 +96,20 @@ Copy `.env-sample` to `.env` and input your Amazon credentials. Then you can deb
 
 Be nice to each other. This server is build in my spare time!
 
-[badge_sponsor]: https://img.shields.io/badge/Sponsor-on%20Github-red
-[badge_issues]: https://img.shields.io/github/issues/svrooij/node-sonos-tts-polly
+[badge_sponsor]: https://img.shields.io/badge/Sponsor-on%20Github-red?style=flat-square
+[badge_issues]: https://img.shields.io/github/issues/svrooij/node-sonos-tts-polly?style=flat-square
 [badge_npm]: https://img.shields.io/npm/v/@svrooij/sonos-tts-polly.svg?style=flat-square
-[badge_docker]: https://img.shields.io/docker/pulls/svrooij/sonos-tts-polly
+[badge_docker]: https://img.shields.io/docker/pulls/svrooij/sonos-tts-polly?style=flat-square
+[badge_sonos-cli]: https://img.shields.io/badge/sonos-cli-blue?style=flat-square
+[badge_sonos-docs]: https://img.shields.io/badge/sonos-api-blue?style=flat-square
+[badge_sonos-mqtt]: https://img.shields.io/badge/sonos-mqtt-blue?style=flat-square
+[badge_sonos-typescript]: https://img.shields.io/badge/sonos-typescript-blue?style=flat-square
+
 [link_sponsor]: https://github.com/sponsors/svrooij
 [link_issues]: https://github.com/svrooij/node-sonos-tts-polly/issues
 [link_npm]: https://www.npmjs.com/package/@svrooij/sonos-tts-polly
 [link_docker]: https://hub.docker.com/r/svrooij/sonos-tts-polly
+[link_sonos-cli]: https://github.com/svrooij/sonos-cli
+[link_sonos-docs]: https://svrooij.io/sonos-api-docs
+[link_sonos-mqtt]: https://svrooij.io/sonos2mqtt
+[link_sonos-typescript]: https://svrooij.io/node-sonos-ts

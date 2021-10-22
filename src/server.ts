@@ -62,6 +62,8 @@ export default class PollyTTSServer {
         const { lang } = req.params;
         const ttsText = req.params.text;
 
+        let { engine, voice, gender } = req.query;
+
         if (this.options.textLimit !== undefined && ttsText.length > this.options.textLimit) {
           res.sendStatus(400);
           return;
@@ -72,7 +74,7 @@ export default class PollyTTSServer {
             req.ip, new Date(), lang, ttsText, req.headers['user-agent']);
         }
 
-        await this.generateCacheFile(req.hostname, lang, ttsText).then((cacheResp) => {
+        await this.generateCacheFile(req.hostname, lang, ttsText, gender?.toString(), voice?.toString(), engine?.toString()).then((cacheResp) => {
           res.send(cacheResp);
         }).catch((err) => {
           res.status(500).send(err);
@@ -82,7 +84,7 @@ export default class PollyTTSServer {
     }
 
     this.app.post('/api/generate', async (req, res) => {
-      const { lang, gender, name } = req.body;
+      const { lang, gender, name, engine } = req.body;
       const ttsText = req.body.text;
 
       if (this.options.textLimit !== undefined && ttsText.length > this.options.textLimit) {
@@ -94,7 +96,7 @@ export default class PollyTTSServer {
         console.log('%s - [%s] - "POST /api/generate" %s "%s" "%s"',
           req.ip, new Date(), lang, ttsText, req.headers['user-agent']);
       }
-      await this.generateCacheFile(req.hostname, lang, ttsText, gender, name).then((cacheResp) => {
+      await this.generateCacheFile(req.hostname, lang, ttsText, gender, name, engine).then((cacheResp) => {
         res.send(cacheResp);
       }).catch((err) => {
         res.status(500).send(err);
@@ -103,14 +105,14 @@ export default class PollyTTSServer {
     });
   }
 
-  private generateFilenameForText(lang: string, ttsText: string, gender?: string, name?: string): string {
+  private generateFilenameForText(lang: string, ttsText: string, gender?: string, name?: string, engine?: string): string {
     const hash = crypto.createHash('sha1')
-      .update(`${lang}-${ttsText}-${gender}-${name}`.toLowerCase())
+      .update(`${lang}-${ttsText}-${gender}-${name}${engine === 'neural' ? 'neural' : ''}`.toLowerCase())
       .digest('hex');
     return `${hash}.mp3`;
   }
 
-  private async generateCacheFile(hostname: string, lang: string, ttsText: string, gender?: string, name?: string): Promise<{ uri: string; cdnUri?: string }> {
+  private async generateCacheFile(hostname: string, lang: string, ttsText: string, gender?: string, name?: string, engine?: string): Promise<{ uri: string; cdnUri?: string }> {
     if (hostname === '' || lang === '' || ttsText === '') {
       throw new Error('Not all required paremeters are set');
     }
@@ -123,12 +125,12 @@ export default class PollyTTSServer {
       // Lookup first matching voice
       const voices = await this.polly?.DescribeVoices();
       const voice = voices?.find((v) => v.LanguageCode?.toLowerCase() === lang.toLowerCase()
-        && v.SupportedEngines?.some((e) => e === 'standard')
+        && (engine === undefined || v.SupportedEngines?.some((e) => e === engine))
         && (gender === undefined || v.Gender?.toLowerCase() === gender.toLowerCase())
         && (name === undefined || v.Name?.toLowerCase() === name.toLowerCase())
       );
       if (voice === undefined || voice.Id === undefined) {
-        throw new Error('Language not found');
+        throw new Error('Voice not found');
       }
 
       // Check and create folder
@@ -141,11 +143,11 @@ export default class PollyTTSServer {
       }
 
       // Download and save speech file
-      const voiceData = await this.polly?.SynthesizeSpeech({ OutputFormat: 'mp3', VoiceId: voice.Id, Text: ttsText });
-      if (voiceData === undefined) {
+      const voiceData = await this.polly?.SynthesizeSpeech({ OutputFormat: 'mp3', VoiceId: voice.Id, Text: ttsText, Engine: engine === 'neural' ? 'neural' : 'standard' });
+      if (voiceData === undefined || voiceData.AudioStream === undefined) {
         throw new Error('Speech could not be downloaded');
       }
-      fs.writeFileSync(cacheFile, voiceData.AudioStream);
+      fs.writeFileSync(cacheFile, voiceData.AudioStream as Buffer);
 
       const tags = {
         title: ttsText,
