@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import { ConfigLoader } from './config';
 import PollyTTSServer from './server';
 
