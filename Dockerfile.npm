@@ -4,7 +4,7 @@ ARG BUILD_VERSION=latest
 
 WORKDIR /usr/src/app
 
-RUN npm install -g sonos-tts-polly@${BUILD_VERSION}
+RUN npm install -g @svrooij/sonos-tts-polly@${BUILD_VERSION}
 
 EXPOSE 5601
 
