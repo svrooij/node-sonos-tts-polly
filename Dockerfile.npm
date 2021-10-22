@@ -1,0 +1,22 @@
+FROM node:current-alpine3.12
+ENV SONOS_TTS_RUNNING_IN_CONTAINER=true
+ARG BUILD_VERSION=latest
+
+WORKDIR /usr/src/app
+
+RUN npm install -g sonos-tts-polly@${BUILD_VERSION}
+
+EXPOSE 5601
+
+ARG VCS_REF=not-set
+ARG BUILD_DATE=unknown
+
+LABEL org.label-schema.build-date=$BUILD_DATE \
+      org.label-schema.description="TTS Server for node-sonos-ts" \
+      org.label-schema.name=sonos-tts-polly \
+      org.label-schema.schema-version=1.0 \
+      org.label-schema.url=https://github.com/svrooij/node-sonos-tts-polly/ \
+      org.label-schema.version=$BUILD_VERSION \
+      org.label-schema.vcs-ref=$VCS_REF
+
+CMD ["sonos-tts-polly"]
