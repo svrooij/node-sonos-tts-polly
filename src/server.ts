@@ -62,7 +62,7 @@ export default class PollyTTSServer {
         const { lang } = req.params;
         const ttsText = req.params.text;
 
-        let { engine, voice, gender } = req.query;
+        const { engine, voice, gender } = req.query;
 
         if (this.options.textLimit !== undefined && ttsText.length > this.options.textLimit) {
           res.sendStatus(400);
@@ -84,7 +84,9 @@ export default class PollyTTSServer {
     }
 
     this.app.post('/api/generate', async (req, res) => {
-      const { lang, gender, name, engine } = req.body;
+      const {
+        lang, gender, name, engine,
+      } = req.body;
       const ttsText = req.body.text;
 
       if (this.options.textLimit !== undefined && ttsText.length > this.options.textLimit) {
@@ -143,7 +145,12 @@ export default class PollyTTSServer {
       }
 
       // Download and save speech file
-      const voiceData = await this.polly?.SynthesizeSpeech({ OutputFormat: 'mp3', VoiceId: voice.Id, Text: ttsText, Engine: engine === 'neural' ? 'neural' : 'standard' });
+      const voiceData = await this.polly?.SynthesizeSpeech({
+        OutputFormat: 'mp3',
+        VoiceId: voice.Id,
+        Text: ttsText,
+        Engine: engine === 'neural' ? 'neural' : 'standard',
+      });
       if (voiceData === undefined || voiceData.AudioStream === undefined) {
         throw new Error('Speech could not be downloaded');
       }
