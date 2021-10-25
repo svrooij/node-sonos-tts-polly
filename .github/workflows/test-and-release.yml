@@ -4,7 +4,12 @@ on:
   push:
     branches:
       - master
+      - main
+      - beta
   pull_request:
+    branches:
+      - master
+      - main
 
 jobs:
   test:
@@ -127,3 +132,53 @@ jobs:
             --build-arg BUILD_VERSION=${{ needs.npm-release.outputs.version }} \
             --build-arg VCS_REF=$(echo ${GITHUB_SHA} | cut -c1-8) \
             .
+
+  container-no-distro:
+    runs-on: ubuntu-latest
+    name: Container release (no distro)
+    needs: [test]
+    if: github.event_name != 'pull_request' && startsWith(github.repository, 'svrooij/') && github.ref == 'refs/heads/beta'
+    steps:
+      - uses: actions/checkout@v2
+
+      -
+        name: Set up QEMU (multi platform)
+        uses: docker/setup-qemu-action@v1
+        with:
+          platforms: all
+
+      -
+        name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+        with:
+          version: latest
+
+      -
+        name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      -
+        name: Login to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish container as no-distro
+        run: |
+          docker buildx build \
+            --platform linux/amd64,linux/arm/v7,linux/arm64 \
+            --push \
+            -f ./Dockerfile.no-distro \
+            -t svrooij/sonos-tts-polly:no-distro \
+            -t ghcr.io/svrooij/node-sonos-tts-polly:no-distro \
+            --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
+            --build-arg BUILD_VERSION=beta \
+            --build-arg VCS_REF=$(echo ${GITHUB_SHA} | cut -c1-8) \
+            .
+
