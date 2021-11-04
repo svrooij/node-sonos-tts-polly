@@ -34,7 +34,7 @@ jobs:
     name: 'Release to npm'
     runs-on: ubuntu-latest
     needs: [test]
-    if: github.event_name != 'pull_request' && startsWith(github.repository, 'svrooij/') && github.ref == 'refs/heads/master'
+    if: github.event_name != 'pull_request' && startsWith(github.repository, 'svrooij/') && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/beta')
     outputs:
       released: ${{ steps.semantic.outputs.new_release_published }}
       version: ${{ steps.semantic.outputs.new_release_version }}
@@ -116,14 +116,14 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
+      
       - name: Publish container as latest
         if: github.ref == 'refs/heads/master'
         run: |
           docker buildx build \
             --platform linux/amd64,linux/arm/v7,linux/arm64 \
             --push \
-            -f ./Dockerfile.npm \
+            -f ./Dockerfile.no-distro \
             -t svrooij/sonos-tts-polly:latest \
             -t svrooij/sonos-tts-polly:${{ needs.npm-release.outputs.version }} \
             -t ghcr.io/svrooij/node-sonos-tts-polly:latest \
@@ -133,52 +133,18 @@ jobs:
             --build-arg VCS_REF=$(echo ${GITHUB_SHA} | cut -c1-8) \
             .
 
-  container-no-distro:
-    runs-on: ubuntu-latest
-    name: Container release (no distro)
-    needs: [test]
-    if: github.event_name != 'pull_request' && startsWith(github.repository, 'svrooij/') && github.ref == 'refs/heads/beta'
-    steps:
-      - uses: actions/checkout@v2
-
-      -
-        name: Set up QEMU (multi platform)
-        uses: docker/setup-qemu-action@v1
-        with:
-          platforms: all
-
-      -
-        name: Set up Docker Buildx
-        id: buildx
-        uses: docker/setup-buildx-action@v1
-        with:
-          version: latest
-
-      -
-        name: Login to DockerHub
-        uses: docker/login-action@v1
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-
-      -
-        name: Login to GitHub Container Registry
-        uses: docker/login-action@v1
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Publish container as no-distro
+      - name: Publish container as beta
+        if: github.ref == 'refs/heads/beta'
         run: |
           docker buildx build \
             --platform linux/amd64,linux/arm/v7,linux/arm64 \
             --push \
             -f ./Dockerfile.no-distro \
-            -t svrooij/sonos-tts-polly:no-distro \
-            -t ghcr.io/svrooij/node-sonos-tts-polly:no-distro \
+            -t svrooij/sonos-tts-polly:beta \
+            -t svrooij/sonos-tts-polly:${{ needs.npm-release.outputs.version }} \
+            -t ghcr.io/svrooij/node-sonos-tts-polly:beta \
+            -t ghcr.io/svrooij/node-sonos-tts-polly:${{ needs.npm-release.outputs.version }} \
             --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
-            --build-arg BUILD_VERSION=beta \
+            --build-arg BUILD_VERSION=${{ needs.npm-release.outputs.version }} \
             --build-arg VCS_REF=$(echo ${GITHUB_SHA} | cut -c1-8) \
             .
-

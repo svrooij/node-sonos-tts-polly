@@ -1,3 +1,6 @@
+# This dockerfile just installs the app the npmjs registry.
+# It's fast but it doesn't work for all environments
+# See https://github.com/svrooij/node-sonos-tts-polly/issues/11
 FROM node:current-alpine3.12
 ENV SONOS_TTS_RUNNING_IN_CONTAINER=true
 ARG BUILD_VERSION=latest
