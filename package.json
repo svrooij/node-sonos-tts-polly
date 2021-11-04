@@ -54,10 +54,5 @@
     "express": "^4.17.1",
     "node-id3": "^0.2.3",
     "yargs": "^17.2.1"
-  },
-  "release": {
-    "branches": [
-      "master"
-    ]
   }
 }
