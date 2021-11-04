@@ -3,27 +3,26 @@
 FROM node:14-slim as base
 WORKDIR /usr/src/app
 
-FROM base as install
+FROM base as deps
+COPY package.json ./
+COPY yarn.lock ./
+COPY .yarnclean-ci ./.yarnclean
+RUN yarn install --production=true
 
-COPY package*.json ./
-RUN npm ci
+FROM deps as build
+RUN rm .yarnclean
+RUN yarn install
 COPY ./src/ ./src/
 COPY tsconfig.json ./
-RUN npm run prepack
-
-RUN apt-get update && \
-      apt-get install -y curl && \
-      curl -sf https://gobinaries.com/tj/node-prune | sh && \
-      npm prune --production && \
-      node-prune
+RUN npm run compile
 
 ARG BUILD_VERSION=0.0.0-development
 RUN npm version ${BUILD_VERSION}
 
 FROM base as combiner
-COPY --from=install /usr/src/app/node_modules /usr/src/app/node_modules
-COPY --from=install /usr/src/app/package.json /usr/src/app/package.json
-COPY --from=install /usr/src/app/dist /usr/src/app/dist
+COPY --from=deps /usr/src/app/node_modules /usr/src/app/node_modules
+COPY --from=build /usr/src/app/package.json /usr/src/app/package.json
+COPY --from=build /usr/src/app/dist /usr/src/app/dist
 COPY README.md /usr/src/app/README.md
 COPY LICENSE /usr/src/app/LICENSE
 
